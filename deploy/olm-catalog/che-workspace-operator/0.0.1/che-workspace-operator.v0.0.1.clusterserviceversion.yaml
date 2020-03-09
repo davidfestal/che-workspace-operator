@@ -2,6 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
+    operators.operatorframework.io/internal-objects: '["workspaceroutings.workspace.che.eclipse.org"]'
     alm-examples: |
       [
         {
@@ -134,7 +135,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-  name: che-workspace-controller.v0.0.1
+  name: che-workspace-operator.v0.0.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -199,7 +200,7 @@ spec:
     Start an Eclipse Che 7 workspace based on a Devfile description,
     that provides all required information related to the project
     development environment
-  displayName: Che Workspace Controller
+  displayName: Che Workspace Operator
   install:
     spec:
       deployments:
@@ -216,7 +217,7 @@ spec:
                 name: che-workspace-controller
             spec:
               containers:
-                env:
+              - env:
                 - name: WATCH_NAMESPACE
                   valueFrom:
                     fieldRef:
@@ -346,6 +347,13 @@ spec:
           - pods/exec
           verbs:
           - create
+        - apiGroups:
+            - admissionregistration.k8s.io
+          resources:
+            - mutatingwebhookconfigurations
+            - validatingwebhookconfigurations
+          verbs:
+            - '*'
         serviceAccountName: che-workspace-controller
     strategy: deployment
   installModes:
