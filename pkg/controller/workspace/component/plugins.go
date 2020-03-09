@@ -14,6 +14,7 @@ package component
 
 import (
 	"encoding/json"
+
 	utils "github.com/che-incubator/che-workspace-operator/pkg/controller/modelutils/k8s"
 
 	workspaceApi "github.com/che-incubator/che-workspace-operator/pkg/apis/workspace/v1alpha1"
@@ -148,11 +149,9 @@ func getArtifactsBrokerObjects(wkspCtx model.WorkspaceContext, components []work
 	}
 
 	brokerComponent = model.ComponentInstanceStatus{
-		WorkspacePodAdditions: &corev1.PodTemplateSpec{
-			Spec: corev1.PodSpec{
-				InitContainers: []corev1.Container{initContainer},
-				Volumes:        []corev1.Volume{cmVolume},
-			},
+		WorkspacePodContributions: &workspaceApi.WorkspacePodContributions{
+			InitContainers: []corev1.Container{initContainer},
+			Volumes:        []corev1.Volume{cmVolume},
 		},
 		ExternalObjects: []runtime.Object{&cm},
 	}

@@ -30,7 +30,7 @@ import (
 )
 
 func convertToComponentInstanceStatus(plugin brokerModel.ChePlugin, wkspCtx model.WorkspaceContext) (*model.ComponentInstanceStatus, error) {
-	pod, err := createPodFromPlugin(plugin, wkspCtx)
+	pod, err := createWorkspacePodContributionsFromPlugin(plugin, wkspCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func convertToComponentInstanceStatus(plugin brokerModel.ChePlugin, wkspCtx mode
 	containerDescriptions := createDescriptionsFromPlugin(plugin)
 
 	component := &model.ComponentInstanceStatus{
-		WorkspacePodAdditions:      pod,
+		WorkspacePodContributions:      pod,
 		ExternalObjects:            externalObjects,
 		Endpoints:                  endpoints,
 		ContributedRuntimeCommands: commands,
@@ -54,7 +54,7 @@ func convertToComponentInstanceStatus(plugin brokerModel.ChePlugin, wkspCtx mode
 	return component, nil
 }
 
-func createPodFromPlugin(plugin brokerModel.ChePlugin, wkspCtx model.WorkspaceContext) (*corev1.PodTemplateSpec, error) {
+func createWorkspacePodContributionsFromPlugin(plugin brokerModel.ChePlugin, wkspCtx model.WorkspaceContext) (*workspaceApi.WorkspacePodContributions, error) {
 	containers, err := convertContainers(plugin.Containers, wkspCtx)
 	if err != nil {
 		return nil, err
@@ -63,11 +63,9 @@ func createPodFromPlugin(plugin brokerModel.ChePlugin, wkspCtx model.WorkspaceCo
 	if err != nil {
 		return nil, err
 	}
-	return &corev1.PodTemplateSpec{
-		Spec: corev1.PodSpec{
+	return &workspaceApi.WorkspacePodContributions{
 			Containers:     containers,
 			InitContainers: initContainers,
-		},
 	}, nil
 }
 

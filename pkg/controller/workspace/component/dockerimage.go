@@ -37,8 +37,8 @@ func setupDockerimageComponent(wkspCtx WorkspaceContext, commands []workspaceApi
 		ContributedRuntimeCommands: []CheWorkspaceCommand{},
 	}
 
-	podTemplate := &corev1.PodTemplateSpec{}
-	componentInstanceStatus.WorkspacePodAdditions = podTemplate
+	workspacePodContributions := &workspaceApi.WorkspacePodContributions{}
+	componentInstanceStatus.WorkspacePodContributions = workspacePodContributions
 	componentInstanceStatus.ExternalObjects = []runtime.Object{}
 
 	var containerName string
@@ -100,7 +100,7 @@ func setupDockerimageComponent(wkspCtx WorkspaceContext, commands []workspaceApi
 		container.Args = *component.Args
 	}
 
-	podTemplate.Spec.Containers = append(podTemplate.Spec.Containers, container)
+	workspacePodContributions.Containers = append(workspacePodContributions.Containers, container)
 
 	for _, service := range createK8sServicesForContainers(wkspCtx, containerName, exposedPorts) {
 		componentInstanceStatus.ExternalObjects = append(componentInstanceStatus.ExternalObjects, &service)

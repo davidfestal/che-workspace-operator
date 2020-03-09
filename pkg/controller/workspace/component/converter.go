@@ -303,10 +303,10 @@ func precreateSubpathsInitContainer(wkspCtx WorkspaceContext, podSpec *corev1.Po
 }
 
 func mergeWorkspaceAdditions(workspaceDeployment *appsv1.Deployment, componentInstanceStatuses []ComponentInstanceStatus, k8sObjects []runtime.Object) error {
-	workspacePodAdditions := []corev1.PodTemplateSpec{}
+	workspacePodAdditions := []workspaceApi.WorkspacePodContributions{}
 	for _, componentInstanceStatus := range componentInstanceStatuses {
-		if componentInstanceStatus.WorkspacePodAdditions != nil {
-			workspacePodAdditions = append(workspacePodAdditions, *componentInstanceStatus.WorkspacePodAdditions)
+		if componentInstanceStatus.WorkspacePodContributions != nil {
+			workspacePodAdditions = append(workspacePodAdditions, *componentInstanceStatus.WorkspacePodContributions)
 		}
 	}
 	workspacePodTemplate := &workspaceDeployment.Spec.Template
@@ -326,7 +326,7 @@ func mergeWorkspaceAdditions(workspaceDeployment *appsv1.Deployment, componentIn
 			workspacePodTemplate.Labels[labelKey] = labelValue
 		}
 
-		for _, container := range addition.Spec.Containers {
+		for _, container := range addition.Containers {
 			if containerNames[container.Name] {
 				return errors.New("Duplicate containers in the workspace definition: " + container.Name)
 			}
@@ -334,7 +334,7 @@ func mergeWorkspaceAdditions(workspaceDeployment *appsv1.Deployment, componentIn
 			workspacePodTemplate.Spec.Containers = append(workspacePodTemplate.Spec.Containers, container)
 		}
 
-		for _, container := range addition.Spec.InitContainers {
+		for _, container := range addition.InitContainers {
 			if initContainerNames[container.Name] {
 				return errors.New("Duplicate init conainers in the workspace definition: " + container.Name)
 			}
@@ -342,7 +342,7 @@ func mergeWorkspaceAdditions(workspaceDeployment *appsv1.Deployment, componentIn
 			workspacePodTemplate.Spec.InitContainers = append(workspacePodTemplate.Spec.InitContainers, container)
 		}
 
-		for _, volume := range addition.Spec.Volumes {
+		for _, volume := range addition.Volumes {
 			if volumeNames[volume.Name] {
 				return errors.New("Duplicate volumes in the workspace definition: " + volume.Name)
 			}
@@ -350,7 +350,7 @@ func mergeWorkspaceAdditions(workspaceDeployment *appsv1.Deployment, componentIn
 			workspacePodTemplate.Spec.Volumes = append(workspacePodTemplate.Spec.Volumes, volume)
 		}
 
-		for _, pullSecret := range addition.Spec.ImagePullSecrets {
+		for _, pullSecret := range addition.ImagePullSecrets {
 			if pullSecretNames[pullSecret.Name] {
 				continue
 			}
