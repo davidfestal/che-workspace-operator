@@ -30,6 +30,29 @@ type BasicSolver struct {
 	Client client.Client
 }
 
+func (solver *BasicSolver) CreateK8sServicesForContainers(cr CurrentReconcile) []corev1.Service {
+	services := []corev1.Service{}
+	for containerName, serviceDesc := range cr.Instance.Spec.Services {
+		serviceName := modelutils.ContainerServiceName(cr.Instance.Name, containerName)
+		servicePorts := modelutils.BuildServicePorts(modelutils.EndpointPortsToInts(serviceDesc.Endpoints), corev1.ProtocolTCP)
+		services = append(services, corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      serviceName,
+				Namespace: cr.Instance.Namespace,
+				Annotations: map[string]string{
+					"org.eclipse.che.machine.name": containerName,
+				},
+			},
+			Spec: corev1.ServiceSpec{
+				Selector: cr.Instance.Spec.WorkspacePodSelector,
+				Type:     corev1.ServiceTypeClusterIP,
+				Ports: servicePorts,
+				},
+			})
+	}
+	return services
+}
+
 func (solver *BasicSolver) CreateDiscoverableServices(cr CurrentReconcile) []corev1.Service {
 	discoverableServices := []corev1.Service{}
 	for _, serviceDesc := range cr.Instance.Spec.Services {
@@ -100,6 +123,11 @@ func (solver *BasicSolver) CreateIngresses(cr CurrentReconcile) []extensionsv1be
 
 func (solver *BasicSolver) CreateOrUpdateRoutingObjects(cr CurrentReconcile) (reconcile.Result, error) {
 	k8sObjects := []runtime.Object{}
+
+	for _, service := range solver.CreateK8sServicesForContainers(cr) {
+		newService := service
+		k8sObjects = append(k8sObjects, &newService)
+	}
 
 	for _, discoverableService := range solver.CreateDiscoverableServices(cr) {
 		newService := discoverableService

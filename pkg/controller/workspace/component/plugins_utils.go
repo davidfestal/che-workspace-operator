@@ -34,18 +34,13 @@ func convertToComponentInstanceStatus(plugin brokerModel.ChePlugin, wkspCtx mode
 	if err != nil {
 		return nil, err
 	}
-	services := createServicesFromPlugin(plugin, wkspCtx)
-	var externalObjects []runtime.Object
-	for _, service := range services {
-		externalObjects = append(externalObjects, service)
-	}
 	endpoints := createEndpointsFromPlugin(plugin)
 	commands := createCommandsFromPlugin(plugin, wkspCtx)
 	containerDescriptions := createDescriptionsFromPlugin(plugin)
 
 	component := &model.ComponentInstanceStatus{
 		WorkspacePodContributions:      pod,
-		ExternalObjects:            externalObjects,
+		ExternalObjects:            []runtime.Object{},
 		Endpoints:                  endpoints,
 		ContributedRuntimeCommands: commands,
 		Containers:                 containerDescriptions,
@@ -67,16 +62,6 @@ func createWorkspacePodContributionsFromPlugin(plugin brokerModel.ChePlugin, wks
 			Containers:     containers,
 			InitContainers: initContainers,
 	}, nil
-}
-
-func createServicesFromPlugin(plugin brokerModel.ChePlugin, wkspCtx model.WorkspaceContext) []*corev1.Service {
-	var services []*corev1.Service
-	for _, container := range plugin.Containers {
-		for _, service := range createK8sServicesForContainers(wkspCtx, container.Name, exposedPortsToInts(container.Ports)) {
-			services = append(services, &service)
-		}
-	}
-	return services
 }
 
 func createEndpointsFromPlugin(plugin brokerModel.ChePlugin) []workspaceApi.Endpoint {

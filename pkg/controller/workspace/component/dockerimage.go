@@ -102,10 +102,6 @@ func setupDockerimageComponent(wkspCtx WorkspaceContext, commands []workspaceApi
 
 	workspacePodContributions.Containers = append(workspacePodContributions.Containers, container)
 
-	for _, service := range createK8sServicesForContainers(wkspCtx, containerName, exposedPorts) {
-		componentInstanceStatus.ExternalObjects = append(componentInstanceStatus.ExternalObjects, &service)
-	}
-
 	componentInstanceStatus.Endpoints = component.Endpoints
 
 	containerAttributes := map[string]string{}

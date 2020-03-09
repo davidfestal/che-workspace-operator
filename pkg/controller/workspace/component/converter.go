@@ -236,19 +236,25 @@ func buildWorkspaceRouting(wkspCtx WorkspaceContext, componentInstanceStatuses [
 			containerEndpoints := []workspaceApi.Endpoint{}
 			for _, port := range container.Ports {
 				port64 := int64(port)
-				for _, endpoint := range componentInstanceStatus.Endpoints {
-					if endpoint.Port != port64 {
+				endpoint := workspaceApi.Endpoint{}
+				for _, ep := range componentInstanceStatus.Endpoints {
+					if ep.Port != port64 {
 						continue
 					}
-					if endpoint.Attributes == nil {
-						endpoint.Attributes = map[workspaceApi.EndpointAttribute]string{}
-					}
-					// public is the default.
-					if _, exists := endpoint.Attributes[workspaceApi.PUBLIC_ENDPOINT_ATTRIBUTE]; !exists {
-						endpoint.Attributes[workspaceApi.PUBLIC_ENDPOINT_ATTRIBUTE] = "true"
-					}
-					containerEndpoints = append(containerEndpoints, endpoint)
+					endpoint = ep
+					break
 				}
+				if endpoint.Attributes == nil {
+					endpoint.Attributes = map[workspaceApi.EndpointAttribute]string{}
+				}
+				// public is the default.
+				if _, exists := endpoint.Attributes[workspaceApi.PUBLIC_ENDPOINT_ATTRIBUTE]; !exists {
+					endpoint.Attributes[workspaceApi.PUBLIC_ENDPOINT_ATTRIBUTE] = "true"
+				}
+				if (endpoint.Name == "") {
+					endpoint.Name = modelutils.ServicePortName(port)
+				}
+				containerEndpoints = append(containerEndpoints, endpoint)
 			}
 			if len(containerEndpoints) > 0 {
 				services[containerName] = workspaceApi.ServiceDescription{

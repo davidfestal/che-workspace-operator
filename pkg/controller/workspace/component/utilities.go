@@ -15,11 +15,9 @@ package component
 import (
 	"strings"
 
-	modelutils "github.com/che-incubator/che-workspace-operator/pkg/controller/modelutils/k8s"
 	config "github.com/che-incubator/che-workspace-operator/pkg/controller/workspace/config"
 	"github.com/eclipse/che-plugin-broker/model"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	workspaceApi "github.com/che-incubator/che-workspace-operator/pkg/apis/workspace/v1alpha1"
 	. "github.com/che-incubator/che-workspace-operator/pkg/controller/workspace/model"
@@ -60,36 +58,6 @@ func createVolumeMounts(wkspCtx WorkspaceContext, mountSources *bool, devfileVol
 	}
 
 	return volumeMounts
-}
-
-func createK8sServicesForContainers(wkspCtx WorkspaceContext, containerName string, exposedPorts []int) []corev1.Service {
-	services := []corev1.Service{}
-	servicePorts := modelutils.BuildServicePorts(exposedPorts, corev1.ProtocolTCP)
-	serviceName := modelutils.ContainerServiceName(wkspCtx.WorkspaceId, containerName)
-	if len(servicePorts) > 0 {
-		service := corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      serviceName,
-				Namespace: wkspCtx.Namespace,
-				Annotations: map[string]string{
-					"org.eclipse.che.machine.name": containerName,
-				},
-				Labels: map[string]string{
-					WorkspaceIDLabel: wkspCtx.WorkspaceId,
-				},
-			},
-			Spec: corev1.ServiceSpec{
-				Selector: map[string]string{
-					CheOriginalNameLabel: CheOriginalName,
-					WorkspaceIDLabel:     wkspCtx.WorkspaceId,
-				},
-				Type:  corev1.ServiceTypeClusterIP,
-				Ports: servicePorts,
-			},
-		}
-		services = append(services, service)
-	}
-	return services
 }
 
 func interpolate(someString string, wkspCtx WorkspaceContext) string {
